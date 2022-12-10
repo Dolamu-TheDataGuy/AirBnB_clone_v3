@@ -1,8 +1,9 @@
 #!/usr/bin/python3
-"""This module implement a rule that returns the status of the application"""
-from flask import jsonify
-import models
+"""index module for the app view"""
+
 from api.v1.views import app_views
+from flask import jsonify
+from models import storage
 from models.amenity import Amenity
 from models.city import City
 from models.place import Place
@@ -11,20 +12,25 @@ from models.state import State
 from models.user import User
 
 
-@app_views.route("/status", strict_slashes=False)
-def view_status():
-    """View function that return a json message"""
+@app_views.route('/status', strict_slashes=False)
+def status():
+    """Method to get status"""
     return jsonify({"status": "OK"})
 
 
-@app_views.route("/stats", strict_slashes=False)
-def view_stats():
-    """Veiw function that retrieves the number of each object by type"""
-    return jsonify({
-        "amenities": models.storage.count(Amenity),
-        "cities": models.storage.count(City),
-        "places": models.storage.count(Place),
-        "reviews": models.storage.count(Review),
-        "states": models.storage.count(State),
-        "users": models.storage.count(User)
-    })
+@app_views.route('/stats', strict_slashes=False)
+def count_table_rows():
+    """method to get stats"""
+    my_count = {
+        "amenities": storage.count(Amenity),
+        "cities": storage.count(City),
+        "places": storage.count(Place),
+        "reviews": storage.count(Review),
+        "states": storage.count(State),
+        "users": storage.count(User)
+    }
+    return jsonify(my_count)
+
+
+if __name__ == "__main__":
+    pass
