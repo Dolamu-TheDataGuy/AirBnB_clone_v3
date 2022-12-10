@@ -67,47 +67,8 @@ test_db_storage.py'])
             self.assertTrue(len(func[1].__doc__) >= 1,
                             "{:s} method needs a docstring".format(func[0]))
 
-    def test_get_db(self):
-        """Test dbstorage with basic data"""
-        stateObj = State(name="GokuState")
-        stateObj.save()
-        models.storage.save()
-        listObj = list(models.storage.all(State).values())[0].id
-        strObj = str(models.storage.all()['State.' + listObj])
-        self.assertNotEqual(strObj, None)
 
-    def test_classofoutput_get_count_db(self):
-        """Test count dbstorage"""
-        total = (models.storage.count())
-        self.assertEqual(type(total), int)
-        totalState = (models.storage.count(State))
-        self.assertEqual(type(totalState), int)
-        state_id0 = list(models.storage.all(State).values())[0].id
-        classGet = models.storage.get(State, state_id0)
-        self.assertEqual(str(type(classGet)), "<class 'models.state.State'>")
-
-    def test_get_fs(self):
-        """Test fstorage"""
-        stateObj = State(name="GokuState")
-        stateObj.save()
-        failTry = models.storage.get('State', 'failId')
-        self.assertEqual(failTry, None)
-        failTry2 = models.storage.get('failId', stateObj.id)
-        self.assertEqual(failTry2, None)
-
-    def test_count_fs(self):
-        """count fs"""
-        count = models.storage.count()
-        countClass = models.storage.count('State')
-        newState = State(name="GokuState")
-        newState.save()
-        newCount = models.storage.count()
-        newCountClass = models.storage.count('State')
-        self.assertEqual(count + 1, newCount)
-        self.assertEqual(countClass + 1, newCountClass)
-
-
-class TestFileStorage(unittest.TestCase):
+class TestDBStorage(unittest.TestCase):
     """Test the FileStorage class"""
     @unittest.skipIf(models.storage_t != 'db', "not testing db storage")
     def test_all_returns_dict(self):
@@ -125,3 +86,29 @@ class TestFileStorage(unittest.TestCase):
     @unittest.skipIf(models.storage_t != 'db', "not testing db storage")
     def test_save(self):
         """Test that save properly saves objects to file.json"""
+
+    @unittest.skipIf(models.storage_t != 'db', "not testing db storage")
+    def test_get(self):
+        """Test that the get method gets the correct item"""
+        test_state = State(name="Homeland")
+        test_state.save()
+        get_test_state = models.storage.get(State, test_state.id)
+        self.assertEqual(get_test_state.name, test_state.name)
+        models.storage.delete(get_test_state)
+        models.storage.save()
+
+    @unittest.skipIf(models.storage_t != 'db', "not testing db storage")
+    def test_count(self):
+        """Test if the count method returns the correct count"""
+        pre_count_all = models.storage.count()
+        pre_count_states = models.storage.count(State)
+        test_state = State(name="Homeland")
+        test_state.save()
+        models.storage.reload()
+        post_count_all = models.storage.count()
+        post_count_states = models.storage.count(State)
+        self.assertGreater(post_count_all, pre_count_all)
+        self.assertGreater(post_count_states, pre_count_states)
+        get_test_state = models.storage.get(State, test_state.id)
+        models.storage.delete(get_test_state)
+        models.storage.save()
