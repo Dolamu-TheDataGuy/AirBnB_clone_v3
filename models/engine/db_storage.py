@@ -76,20 +76,27 @@ class DBStorage:
         self.__session.remove()
 
     def get(self, cls, id):
-        """returns the object based on the class and its ID,
-        or None if not found"""
-        if cls is None or id is None:
-            return None
-        if type(cls) is str:
-            if cls not in classes:
-                return None
-            cls = classes[cls]
-        save = models.storage.all(cls)
-        return save.get("{}.{}".format(cls.__name__, id))
+        """retrieve a single object based on the class and id"""
+        if cls is not None and id is not None and type(id) is str:
+            if type(cls) is str and cls in classes:
+                cls = classes[cls]
+            if type(cls) is not str and cls in classes.values():
+                result = self.__session.query(cls).filter(cls.id == id).first()
+                return result
+        return None
 
     def count(self, cls=None):
-        """returns the number of objects in storage matching the given class.
-        If no class is passed, returns the count of all objects in storage."""
-        if cls is None:
-            return len(models.storage.all())
-        return len(models.storage.all(cls))
+        """A method to count the number of objects in storage:
+        returns the count of all objects if no class is provided
+        """
+        # counts = 0
+        if cls is not None:
+            if type(cls) is str and cls in classes.keys():
+                cls = classes[cls]
+            return self.__session.query(cls).count()
+        else:
+            # for _class in classes.values():
+            #     if _class is not classes['Place']:
+            #         counts += self.__session.query(_class).count()
+            # return counts
+            return len(self.all())
